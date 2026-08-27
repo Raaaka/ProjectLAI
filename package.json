@@ -1,0 +1,63 @@
+{
+  "name": "project-lai",
+  "version": "1.0.0",
+  "description": "Local AI Linter — Offline, privacy-first code review powered by local LLMs",
+  "type": "module",
+  "bin": {
+    "lai": "./dist/cli.js"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "prompts",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsx src/cli.ts",
+    "ai:chat": "tsx src/cli.ts",
+    "ai:lint": "tsx src/cli.ts --file",
+    "prepublishOnly": "npm run build"
+  },
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "ai",
+    "linter",
+    "llm",
+    "local",
+    "offline",
+    "playwright",
+    "code-review",
+    "gemma",
+    "llama"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Raaaka/project-lai"
+  },
+  "author": "Raaaka",
+  "dependencies": {
+    "node-llama-cpp": "^3.19.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "tsup": "^8.0.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.7.0"
+  }
+}

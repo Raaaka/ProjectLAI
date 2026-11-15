@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project LAI - 1-Click Setup</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; padding: 20px; max-width: 700px; margin: 0 auto; background: #f4f7f6; color: #333; }
+        h1, h2 { color: #2c3e50; text-align: center; }
+        .card { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #e1e4e8; }
+        label { display: block; margin-top: 15px; font-weight: 600; font-size: 14px; color: #4a5568; }
+        input, select { width: 100%; padding: 10px; margin-top: 6px; border: 1px solid #cbd5e0; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .full-width { grid-column: span 2; }
+        .btn-launch { background-color: #28a745; color: white; padding: 14px 24px; font-size: 16px; border: none; border-radius: 6px; cursor: pointer; display: block; width: 100%; margin-top: 25px; font-weight: bold; transition: background 0.2s; }
+        .btn-launch:hover { background-color: #218838; }
+        .btn-launch:disabled { background-color: #6c757d; cursor: not-allowed; }
+        .warning-msg { color: #d32f2f; background: #fde8e8; padding: 12px; border-radius: 6px; margin-top: 15px; font-weight: 500; font-size: 14px; display: none; text-align: center; border: 1px solid #f8b4b4; }
+        .hidden-code { display: none; }
+    </style>
+</head>
+<body>
+    <h1>Project LAI Setup</h1>
+    
+    <div class="card">
+        <h2>Environment Settings</h2>
+        <div class="grid">
+            <div class="full-width">
+                <label>Operating System</label>
+                <select id="osSelect">
+                    <option value="windows">Windows</option>
+                    <option value="mac">macOS / Linux</option>
+                </select>
+            </div>
+            <div class="full-width">
+                <label>Absolute Installation Path (Folder containing llama-server)</label>
+                <input type="text" id="installPath" value="C:\ProjectLAI">
+            </div>
+            <div>
+                <label>Model Filename (.gguf)</label>
+                <input type="text" id="modelName" value="gemma4-e2b.gguf">
+            </div>
+            <div>
+                <label>Host IP</label>
+                <input type="text" id="hostIp" value="127.0.0.1">
+            </div>
+            <div>
+                <label>Port</label>
+                <input type="number" id="portNum" value="8080">
+            </div>
+            <div>
+                <label>CPU Threads</label>
+                <input type="number" id="threads" value="4">
+            </div>
+        </div>
+ 
+        <button id="launchBtn" class="btn-launch" onclick="generateAndDownload()">Download & Launch Server</button>
+        <div id="warningMsg" class="warning-msg">
+            ⚠️ <b>Please wait...</b><br>
+            Close any previous terminal session before launching a new one to avoid port conflicts.
+        </div>
+    </div>
+ 
+    <textarea id="scriptOutput" class="hidden-code"></textarea>
+    
+    <script>
+        function updateScripts() {
+            const os = document.getElementById('osSelect').value;
+            let installPath = document.getElementById('installPath').value;
+            const model = document.getElementById('modelName').value;
+            const ip = document.getElementById('hostIp').value;
+            const port = document.getElementById('portNum').value;
+            const threads = document.getElementById('threads').value;
+            
+            let script = '';
+ 
+            if (os === 'windows') {
+                installPath = installPath.replace(/\\$/, '');
+                const exePath = `${installPath}\\llama-server.exe`;
+                const modelPath = `${installPath}\\models\\${model}`;
+                script = `@echo off\ntitle Project LAI - Local AI Copilot Server\necho Starting Local AI Engine on http://${ip}:${port} ...\n\n:: Layer 1 Security: Enforce Standard User Execution\nstart "" runas /trustlevel:0x20000 "\\"${exePath}\\" -m \\"${modelPath}\\" --host ${ip} --port ${port} -c 4096 -t ${threads} --no-webui"\n\nexit`;
+            } else {
+                installPath = installPath.replace(/\/$/, '');
+                const exePath = `${installPath}/llama-server`;
+                const modelPath = `${installPath}/models/${model}`;
+                script = `#!/bin/bash\necho "Starting Project LAI on http://${ip}:${port} ..."\n\n"${exePath}" -m "${modelPath}" --host ${ip} --port ${port} -c 4096 -t ${threads} --no-webui`;
+            }
+            
+            document.getElementById('scriptOutput').value = script;
+        }
+ 
+        function generateAndDownload() {
+            updateScripts();
+            const os = document.getElementById('osSelect').value;
+            const scriptText = document.getElementById('scriptOutput').value;
+            
+            const filename = os === 'windows' ? 'start-lai.bat' : 'start-lai.command';
+            
+            const blob = new Blob([scriptText], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            const btn = document.getElementById('launchBtn');
+            const warning = document.getElementById('warningMsg');
+            
+            btn.disabled = true;
+            btn.innerText = `Downloaded ${filename}! Click the file in your browser to run.`;
+            warning.style.display = 'block';
+            
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.innerText = "Download & Launch Server";
+                warning.style.display = 'none';
+            }, 15000);
+        }
+ 
+        document.getElementById('osSelect').addEventListener('change', function() {
+            const pathInput = document.getElementById('installPath');
+            if (this.value === 'mac') {
+                pathInput.value = '~/ProjectLAI';
+            } else {
+                pathInput.value = 'C:\\ProjectLAI';
+            }
+            updateScripts();
+        });
+ 
+        document.querySelectorAll('input, select').forEach(input => {
+            input.addEventListener('input', updateScripts);
+        });
+        updateScripts();
+    </script>
+</body>
+</html>

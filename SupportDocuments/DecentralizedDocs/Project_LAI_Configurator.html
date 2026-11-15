@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project LAI - Setup Configurator</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; padding: 20px; max-width: 900px; margin: 0 auto; background: #f4f7f6; color: #333; }
+        h1, h2 { color: #2c3e50; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; border: 1px solid #e1e4e8; }
+        label { display: block; margin-top: 12px; font-weight: 600; font-size: 14px; color: #4a5568; }
+        input { width: 100%; padding: 10px; margin-top: 6px; border: 1px solid #cbd5e0; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
+        input:focus { border-color: #3182ce; outline: none; box-shadow: 0 0 0 3px rgba(49,130,206,0.1); }
+        textarea { width: 100%; height: 140px; margin-top: 6px; font-family: 'Courier New', Courier, monospace; font-size: 13px; padding: 12px; border: 1px solid #cbd5e0; border-radius: 4px; background: #2d3748; color: #e2e8f0; resize: vertical; box-sizing: border-box; white-space: pre; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .full-width { grid-column: span 2; }
+        button { background-color: #3182ce; color: white; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; float: right; margin-top: -30px; font-size: 12px; }
+        button:hover { background-color: #2b6cb0; }
+        .code-container { position: relative; margin-top: 15px; }
+    </style>
+</head>
+<body>
+    <h1>Project LAI Setup Configurator</h1>
+    <p>Use this interactive interface to configure your local AI server parameters. The starter scripts below will update in real-time. Copy the updated scripts to deploy your decentralized setup.</p>
+    
+    <div class="card">
+        <h2>1. Environment Configuration</h2>
+        <div class="grid">
+            <div>
+                <label>Model Filename (.gguf)</label>
+                <input type="text" id="modelName" value="gemma4-e2b.gguf">
+            </div>
+            <div>
+                <label>Host Binding IP</label>
+                <input type="text" id="hostIp" value="127.0.0.1" title="Use 127.0.0.1 for local isolation, 0.0.0.0 for LAN access">
+            </div>
+            <div>
+                <label>Port</label>
+                <input type="number" id="portNum" value="8080">
+            </div>
+            <div>
+                <label>Context Size</label>
+                <input type="number" id="contextSize" value="4096">
+            </div>
+            <div>
+                <label>CPU Threads</label>
+                <input type="number" id="threads" value="6">
+            </div>
+            <div>
+                <label>GPU Layers (-ngl)</label>
+                <input type="number" id="gpuLayers" value="0" title="Set to 99 for machines with dedicated NVIDIA GPUs (e.g. GTX 1650). Set to 0 for CPU-only instances.">
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>2. Generated Scripts</h2>
+        
+        <div class="code-container">
+            <label>Windows: start-lai.bat</label>
+            <button onclick="copyText('batScript')">Copy Script</button>
+            <textarea id="batScript" readonly></textarea>
+        </div>
+        
+        <div class="code-container">
+            <label>Mac/Linux: start-lai.command</label>
+            <button onclick="copyText('shScript')">Copy Script</button>
+            <textarea id="shScript" readonly></textarea>
+        </div>
+        
+        <div class="code-container">
+            <label>VS Code: config.json (Continue.dev)</label>
+            <button onclick="copyText('jsonScript')">Copy JSON</button>
+            <textarea id="jsonScript" readonly></textarea>
+        </div>
+    </div>
+
+    <script>
+        function updateScripts() {
+            const model = document.getElementById('modelName').value;
+            const ip = document.getElementById('hostIp').value;
+            const port = document.getElementById('portNum').value;
+            const ctx = document.getElementById('contextSize').value;
+            const threads = document.getElementById('threads').value;
+            const ngl = document.getElementById('gpuLayers').value;
+            
+            const gpuFlag = ngl > 0 ? ` -ngl ${ngl}` : "";
+
+            const bat = `@echo off
+title Project LAI - Local AI Copilot Server
+echo Starting Local AI Engine on http://${ip}:${port} ...
+
+:: Layer 1 Security: Enforce Standard User Execution
+runas /trustlevel:0x20000 "llama-server.exe -m .\models\${model} --host ${ip} --port ${port} -c ${ctx} -t ${threads}${gpuFlag} --no-webui"
+
+pause`;
+            
+            const sh = `#!/bin/bash
+cd "$(dirname "$0")"
+echo "Starting Project LAI on http://${ip}:${port} ..."
+
+./llama-server -m ./models/${model} --host ${ip} --port ${port} -c ${ctx} -t ${threads}${gpuFlag} --no-webui`;
+
+            const modelBaseName = model.split('.')[0] || "project-lai-model";
+            
+            const json = `{
+  "models": [
+    {
+      "title": "Project LAI - Local Model",
+      "provider": "openai",
+      "model": "${modelBaseName}",
+      "apiBase": "http://${ip}:${port}/v1",
+      "apiKey": "local"
+    }
+  ],
+  "tabAutocompleteModel": {
+    "title": "LAI Autocomplete",
+    "provider": "openai",
+    "model": "${modelBaseName}",
+    "apiBase": "http://${ip}:${port}/v1",
+    "apiKey": "local"
+  }
+}`;
+
+            document.getElementById('batScript').value = bat;
+            document.getElementById('shScript').value = sh;
+            document.getElementById('jsonScript').value = json;
+        }
+
+        function copyText(elementId) {
+            const copyText = document.getElementById(elementId);
+            copyText.select();
+            document.execCommand("copy");
+            alert("Copied to clipboard!");
+        }
+
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', updateScripts);
+        });
+
+        // Generate on first load
+        updateScripts();
+    </script>
+</body>
+</html>

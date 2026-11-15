@@ -71,7 +71,9 @@ function parseFindings(rawResponse: string): LintFinding[] {
   if (jsonMatch) {
     try {
       const parsed = JSON.parse(jsonMatch[0]) as LintFinding[];
-      if (Array.isArray(parsed) && parsed.length > 0) {
+      if (Array.isArray(parsed)) {
+        // Empty array = no issues found (valid result)
+        if (parsed.length === 0) return [];
         return parsed.map((f) => ({
           severity: f.severity || "MEDIUM",
           rule: f.rule || "GENERAL",

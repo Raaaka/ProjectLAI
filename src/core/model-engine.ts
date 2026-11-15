@@ -30,7 +30,7 @@ export class GemmaModelEngine implements IModelEngine {
     console.log("🔄 Loading model into memory... (this may take a moment)");
     this.llama = await getLlama();
     this.model = await this.llama.loadModel({ modelPath: this.modelPath });
-    this.context = await this.model.createContext();
+    this.context = await this.model.createContext({ contextSize: 4096 });
     this.session = new LlamaChatSession({
       contextSequence: this.context.getSequence(),
     });

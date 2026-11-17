@@ -1,0 +1,15 @@
+name: Main Config
+version: 1.0.0
+schema: v1
+models:
+  - name: Project LAI (Local)
+    provider: openai
+    model: gemma4-e2b
+    apiBase: http://127.0.0.1:8080/v1
+    apiKey: local
+tabAutocompleteModel:
+  name: LAI Autocomplete
+  provider: openai
+  model: gemma4-e2b
+  apiBase: http://127.0.0.1:8080/v1
+  apiKey: local

@@ -29,6 +29,9 @@
     "dev": "tsx src/cli.ts",
     "ai:chat": "tsx src/cli.ts",
     "ai:lint": "tsx src/cli.ts --file",
+    "ext:build": "npm --prefix extensions/vscode-lai run build",
+    "ext:package": "npm --prefix extensions/vscode-lai run package",
+    "ext:lint": "npm --prefix extensions/vscode-lai run lint",
     "prepublishOnly": "npm run build"
   },
   "license": "Apache-2.0",

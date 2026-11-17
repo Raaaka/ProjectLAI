@@ -1,0 +1,183 @@
+{
+  "name": "project-lai",
+  "displayName": "Project LAI — Local AI Copilot",
+  "description": "Offline, privacy-first AI coding assistant powered by local LLMs. Zero telemetry, zero cloud, fully air-gapped.",
+  "version": "1.0.0",
+  "publisher": "project-lai",
+  "license": "Apache-2.0",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Machine Learning",
+    "Programming Languages",
+    "Linters"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "lai.openChat",
+        "title": "Open Chat",
+        "category": "Project LAI",
+        "icon": "$(comment-discussion)"
+      },
+      {
+        "command": "lai.inlineEdit",
+        "title": "Inline Edit",
+        "category": "Project LAI",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "lai.reviewFile",
+        "title": "Review Current File",
+        "category": "Project LAI",
+        "icon": "$(search)"
+      },
+      {
+        "command": "lai.resetChat",
+        "title": "Reset Chat Session",
+        "category": "Project LAI",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "lai.toggleAutocomplete",
+        "title": "Toggle Tab Autocomplete",
+        "category": "Project LAI"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "lai.inlineEdit",
+        "key": "ctrl+i",
+        "mac": "cmd+i",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "lai.openChat",
+        "key": "ctrl+shift+l",
+        "mac": "cmd+shift+l"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "lai-sidebar",
+          "title": "Project LAI",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "lai-sidebar": [
+        {
+          "type": "webview",
+          "id": "lai.chatView",
+          "name": "Chat"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Project LAI",
+      "properties": {
+        "lai.apiBase": {
+          "type": "string",
+          "default": "http://127.0.0.1:8080/v1",
+          "description": "Base URL for the OpenAI-compatible API endpoint."
+        },
+        "lai.model": {
+          "type": "string",
+          "default": "gemma4-e2b",
+          "description": "Model name to use for chat and inline edit."
+        },
+        "lai.apiKey": {
+          "type": "string",
+          "default": "local",
+          "description": "API key for authentication (use 'local' for local servers)."
+        },
+        "lai.autocomplete.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable tab autocomplete (ghost text) suggestions."
+        },
+        "lai.autocomplete.model": {
+          "type": "string",
+          "default": "",
+          "description": "Model for autocomplete (defaults to main model if empty)."
+        },
+        "lai.autocomplete.apiBase": {
+          "type": "string",
+          "default": "",
+          "description": "API base for autocomplete (defaults to main apiBase if empty)."
+        },
+        "lai.autocomplete.debounceMs": {
+          "type": "number",
+          "default": 250,
+          "description": "Debounce delay in ms before triggering autocomplete."
+        },
+        "lai.autocomplete.maxTokens": {
+          "type": "number",
+          "default": 256,
+          "description": "Maximum tokens for autocomplete responses."
+        },
+        "lai.configFile": {
+          "type": "string",
+          "default": "",
+          "description": "Path to a YAML/JSON config file (e.g., .lai/config.yaml). Overrides individual settings when set."
+        },
+        "lai.linter.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable LAI linter diagnostics on file save."
+        },
+        "lai.linter.prompt": {
+          "type": "string",
+          "default": "playwright-review",
+          "description": "Default review prompt ruleset name from the prompts/ directory."
+        },
+        "lai.systemPrompt": {
+          "type": "string",
+          "default": "You are Project LAI, an expert AI coding assistant. You provide concise, accurate, and well-structured code reviews and suggestions. Always respond with clear explanations and working code examples.",
+          "description": "System prompt sent with every chat and inline edit request."
+        }
+      }
+    },
+    "menus": {
+      "editor/context": [
+        {
+          "command": "lai.reviewFile",
+          "group": "lai@1",
+          "when": "editorTextFocus"
+        },
+        {
+          "command": "lai.inlineEdit",
+          "group": "lai@2",
+          "when": "editorHasSelection"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "lai.resetChat",
+          "when": "view == lai.chatView",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "build": "node esbuild.js",
+    "watch": "node esbuild.js --watch",
+    "package": "vsce package --no-dependencies",
+    "lint": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/node": "^20.0.0",
+    "esbuild": "^0.21.0",
+    "@vscode/vsce": "^2.24.0",
+    "typescript": "^5.5.0"
+  }
+}
